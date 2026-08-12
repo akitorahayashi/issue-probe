@@ -1,7 +1,7 @@
 # Configures development tools only (pytest / ruff / mypy). The skills run on the
 # user's own python3 with no runtime dependency, so none is declared here.
 [project]
-name = "skills-plugin-py"
+name = "issue-probe"
 version = "0.0.0"
 requires-python = ">=3.10"
 
@@ -20,5 +20,6 @@ target-version = "py310"
 line-length = 120
 
 [tool.mypy]
-python_version = "3.12"
-files = ["plugin/skills", "tests"]
+python_version = "3.10"
+files = ["plugin/scripts", "tests"]
+mypy_path = "plugin/scripts"

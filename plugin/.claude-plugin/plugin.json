@@ -1,8 +1,8 @@
 {
-  "name": "example-plugin",
+  "name": "issue-probe",
   "version": "0.1.0",
-  "description": "Replace this with your plugin's description.",
+  "description": "Staged investigation workflow: probe a GitHub issue, optionally re-verify items, and hand off a paste-ready spreadsheet list and issue comment draft.",
   "author": {
-    "name": "your-name"
+    "name": "akitorahayashi"
   }
 }
