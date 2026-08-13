@@ -1,67 +1,69 @@
-# skills-plugin-py
+# issue-probe
 
-## Project Overview
+## Purpose
 
-A template for a multi-client Agent Skills plugin whose skills are backed by
-Python scripts. One repository is one plugin, installable on Claude Code, Codex
-CLI, and Antigravity CLI from a shared `skills/` directory. Each skill drives a
-standalone stdlib-only Python CLI that prints one JSON document. `example-skill`
-is a placeholder, meant to be renamed and replaced.
+Turn an investigation request written in a GitHub issue into two hand-off
+artifacts: a paste-ready list for the shared spreadsheet that tracks the same
+investigation across platforms, and a comment draft that reports the result back
+on the issue. The plugin never writes outward; a person pastes and posts.
 
-## Directory Structure
-
-```
-plugin/
-  example-plugin/                    Distributed plugin — the marketplace `source` target
-    .claude-plugin/plugin.json       Claude Code manifest
-    .codex-plugin/plugin.json        Codex manifest
-    plugin.json                      Antigravity CLI manifest
-    skills/
-      example-skill/
-        SKILL.md                     Drives summarize.py
-        scripts/summarize.py         Example CLI — count/sum/min/max/mean
-.claude-plugin/marketplace.json      Distribution catalog; git-subdir → plugin/example-plugin
-tests/                               pytest process-boundary tests; excluded from the plugin
-  conftest.py                        Subprocess CLI runner
-  example_skill/                     summarize.py tests, split by concern
-pyproject.toml                       Dev-tool configuration only (pytest, ruff, mypy)
-Makefile                             make test / fix / lint
+```text
+probe-issue ──→ findings/ + report.tsv + issue-comment.md ──→ human pastes and posts
+                    │
+                    ├── verify-items (optional) ──→ artifacts updated + verdicts.md
+                    └── withdraw-items ───────────→ named items retired
 ```
 
-Only the `plugin/example-plugin/` subtree ships, selected by the `git-subdir`
-source in `.claude-plugin/marketplace.json`. Development assets stay at the
-repository root and are excluded from the installed plugin. Component
-directories (`skills/`, and later `hooks/`, `agents/`, `commands/`, `.mcp.json`)
-live at the subtree root, not inside its `.claude-plugin/`. CONTRIBUTING.md
-covers the per-client details.
+## Architecture
 
-## Testing
+The repository root is the marketplace root; `plugin/` is the plugin root. This
+is a Claude Code plugin only; no Codex or Antigravity manifests exist.
 
-Tests live under `tests/`, outside the distributed subtree, one directory per
-skill. They assert the CLI process boundary — exit code, stdout/stderr JSON,
-written files — not internal composition. `tests/conftest.py` holds the
-subprocess runner.
+| Component | Name | Responsibility |
+|---|---|---|
+| Entry skill | probe-issue | Read the issue, fix the contracts, fan out investigators, assemble report.tsv, draft the issue comment |
+| Entry skill | verify-items | Re-verify existing items by refutation and record verdicts |
+| Entry skill | withdraw-items | Retire named items without renumbering |
+| Judgment skill | probe-workspace | Structure, canonical files, editing responsibility, IDs, freshness |
+| Judgment skill | row-style | How a spreadsheet cell is written for a mixed engineering and business audience |
+| Agent | issue-investigator | Investigate one axis and write its evidence file |
+| Agent | item-verifier | Refute assigned items and write its verdict file |
 
-Run `make fix` first, then `make lint` and `make test`.
+Shared runtime scripts live under `plugin/scripts/`. CLIs own every side effect
+(gh, git, ripgrep, filesystem); libraries stay pure.
 
-## Core Concepts
+## Artifacts
 
-### Stdlib-Only Runtime
+Every runtime artifact lives under `.tmp/issue-probes/<issue>/` in the
+repository whose code is being investigated. The issue itself may live in a
+different repository; the workspace still follows the code.
 
-Standard library only, Python 3.10+. No third-party import enters
-`plugin/**/skills/**/scripts/`, so a skill runs on the user's own `python3` as
-installed. The `pyproject.toml` dependencies are dev tools that never ship.
+- `report.tsv` is the canonical list. Its first column is the immutable item ID
+- `findings.md` plus `findings/<axis>.md` carry the evidence. One writer per file
+- `schema.json` is the spreadsheet column contract that `check_rows.py` enforces
+- `coverage.json` records the search definitions and the counts `count_hits.py` measured
+- `verdicts.md` is the append-only record of re-verification rounds
+- `issue-comment.md` is the outbound report draft
 
-### CLI Contract
+Item numbers are never renumbered and never reused. A pasted spreadsheet row
+keeps its position, so compacting numbers would desynchronize the transcript.
 
-One JSON document on stdout. Exit 0 for an affirmative result, 1 for a valid
-request with a negative or empty result, 2 for a config or runtime error. Exit 2
-prints JSON to stderr carrying an actionable `action`. Failures surface
-explicitly, never as a silently degraded result.
+## Repository Conventions
+
+Skill documents, agent definitions, templates, and investigation artifacts are
+Japanese. Repository engineering documentation, script docstrings, and test
+names are English.
+
+The plugin version lives in `plugin/.claude-plugin/plugin.json`. Runtime code
+uses only the Python standard library; development dependencies live in
+pyproject.toml.
+
+Run `make fix` before `make lint`. Validate both the marketplace root and the
+plugin root after component changes.
 
 ## Documentation Responsibilities
 
-- AGENTS.md — source map and invariants. The orientation layer.
-- README.md — structure, manifests, install, and customization. The front door.
-- CONTRIBUTING.md — development workflow and the distribution boundary in full.
-- `skills/<name>/SKILL.md` — agent-facing behavior of that skill.
+- AGENTS.md — source map and invariants; the orientation layer
+- README.md — what the plugin does, its components, and how to install it
+- CONTRIBUTING.md — development workflow, CLI contract, distribution boundary
+- `plugin/skills/<name>/SKILL.md` — that skill's behavior for the agent

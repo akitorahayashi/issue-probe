@@ -1,14 +1,14 @@
 {
-  "name": "skills-plugin-py",
-  "description": "A GitHub-installable marketplace for the example Python-backed Agent Skills plugin.",
+  "name": "issue-probe",
+  "description": "A GitHub-installable marketplace for the issue-probe investigation workflow plugin.",
   "owner": {
-    "name": "your-name"
+    "name": "akitorahayashi"
   },
   "plugins": [
     {
-      "name": "example-plugin",
+      "name": "issue-probe",
       "source": "./plugin",
-      "description": "Replace this with your plugin's description."
+      "description": "Staged investigation workflow: probe a GitHub issue, optionally re-verify items, and hand off a paste-ready spreadsheet list and issue comment draft."
     }
   ]
 }
