@@ -17,7 +17,7 @@ probe-issue ──→ findings/ + report.tsv + issue-comment.md ──→ human 
 ## Architecture
 
 The repository root is the marketplace root; `plugin/` is the plugin root. This
-is a Claude Code plugin only; no Codex or Antigravity manifests exist.
+is a Claude Code plugin only; no Codex manifest exists.
 
 | Component | Name | Responsibility |
 |---|---|---|
