@@ -89,9 +89,8 @@ def fetch_issue(issue: int, repo: str) -> dict[str, Any]:
 
 
 def write_workspace(root: Path, issue: int, document: dict[str, Any]) -> Path:
-    probes = root / ".tmp" / "issue-probes"
-    directory = probes / str(issue)
-    (directory / "findings").mkdir(parents=True, exist_ok=True)
+    directory = root / ".tmp" / "issue-probes" / str(issue)
+    directory.mkdir(parents=True, exist_ok=True)
 
     gitignore = root / ".tmp" / ".gitignore"
     if not gitignore.exists():

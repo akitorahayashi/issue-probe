@@ -64,10 +64,16 @@ come from hand-written fixtures, never from the code under test.
 Enumerate matrix cases with `@pytest.mark.parametrize`, and keep any temporary
 state in `tmp_path`.
 
-The highest-value tests are the ones that stop a transfer accident: a cell
-carrying a tab or a newline, a row with the wrong column count, a header that
-drifted from `schema.json`, or a duplicated item ID. Each of those must fail the
-check before anyone pastes into the shared sheet.
+The highest-value tests are the ones that stop a transfer accident: a value
+carrying a tab or a newline, a missing field, a risk outside the vocabulary, a
+duplicated item ID, or a gap in the numbering that no verdict accounts for. Each
+of those must fail the check before anyone pastes into the shared sheet.
+
+The sheet layout in `plugin/scripts/columns.py` is the layout every workspace
+fills, so a test binds it to the findings.md template: the field labels the
+template writes are the field columns the layout declares. Without that test the
+contract would drift between the document a person writes and the code that reads
+it.
 
 ## CLI contract
 
