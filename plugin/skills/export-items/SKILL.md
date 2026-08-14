@@ -37,7 +37,7 @@ python3 <plugin-root>/scripts/export_items.py <dir>
 ```
 
 - 終了コード0: `path` に paste.tsv が書かれた
-- 終了コード1: `problems` を findings.md 側で解消して再実行する
+- 終了コード1: `problems` を findings.md 側で解消して再実行する。前回の paste.tsv があれば削除される。古い書き出しは現行のものと見分けが付かないため残さない
 - 終了コード2: `action` に従って直してから再実行する
 
 ### 3. 報告

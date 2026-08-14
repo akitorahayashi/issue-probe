@@ -78,6 +78,30 @@ def test_a_value_that_breaks_the_paste_is_refused_and_nothing_is_written(workspa
     assert not (workspace.path / "paste.tsv").exists()
 
 
+def test_a_value_the_column_refuses_is_refused_here_too(workspace, run_export_items):
+    """The export asks the columns the same question the check asks, so neither lets it through."""
+    workspace.write_findings(dict(SAMPLE_FRONT_MATTER, nextItem="2"), item(risk="やばい"))
+
+    result = run_export_items(workspace.path)
+
+    assert result.returncode == 1
+    assert [entry["check"] for entry in json.loads(result.stdout)["problems"]] == ["enum"]
+    assert not (workspace.path / "paste.tsv").exists()
+
+
+def test_a_failed_export_removes_the_previous_one(workspace, run_export_items):
+    """A leftover export reads as current, and it is the file a person actually pastes."""
+    run_export_items(workspace.path)
+    assert (workspace.path / "paste.tsv").exists()
+    workspace.write_findings(dict(SAMPLE_FRONT_MATTER, nextItem="2"), item(risk="やばい"))
+
+    result = run_export_items(workspace.path)
+
+    assert result.returncode == 1
+    assert json.loads(result.stdout)["removed"].endswith("paste.tsv")
+    assert not (workspace.path / "paste.tsv").exists()
+
+
 def test_a_missing_field_is_refused_and_nothing_is_written(workspace, run_export_items):
     text = "\n".join(line for line in item().splitlines() if not line.startswith("- 備考:"))
     workspace.write_findings(dict(SAMPLE_FRONT_MATTER, nextItem="2"), text)

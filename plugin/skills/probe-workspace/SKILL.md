@@ -97,7 +97,9 @@ findings.md は現在の状態、verdicts.md は再検証と取り下げによ�
 
 findings.md の front matter の `nextItem` は、findings.md と verdicts.md に現れるすべての番号より大きい。新規項目へ割り当てるたびに1増やす。取り下げても下げない。
 
-取り下げは findings.md の節を削除し、verdicts.md に delete の評決として、その項目が何を主張していたかと落とした理由を残す。`1` から `nextItem - 1` までの欠番に delete の評決が無ければ check_items.py が problem にする。番号を消したのに主張が残らない状態を作らないためである。
+取り下げは findings.md の節を削除し、verdicts.md に delete の評決として、その項目が何を主張していたかと落とした理由を残す。`1` から `nextItem - 1` までの欠番に delete の評決が無ければ check_items.py が problem にする。番号を消したのに主張が残らない状態を作らないためである。評決の見出しだけを置いて本文を書かない場合も同じ状態になるため、本文の無い delete の評決も problem になる。
+
+delete の評決がある番号は一覧に戻さない。シートには同じ番号の行が残っているので、そこへ別の主張を入れると転記済みの行が別の項目を指すことになる。再実行で一覧を作り直すときも、既存の番号は主張ごと引き継ぎ、新しい主張には `nextItem` から番号を割り当てる。
 
 ## 件数の扱い
 
@@ -112,6 +114,8 @@ findings.md の front matter の `nextItem` は、findings.md と verdicts.md �
 調査は findings.md の `codeSha` が表す時点のコードに対して成立する。現在との差はユーザーへ伝え、追随には probe-issue の再実行を使う。
 
 `check_items.py` は `codeSha` と現在の HEAD の差を `info` に載せる。停止はさせない。差があること自体は誤りではなく、報告すべき事実である。
+
+paste.tsv は findings.md より新しいときだけ現行である。findings.md を変えた時点で前回の書き出しは古くなるが、ファイルの見た目からは分からないため、check_items.py が古い paste.tsv を `info` に載せる。貼る前に export-items で作り直す。
 
 ## 調査方針
 

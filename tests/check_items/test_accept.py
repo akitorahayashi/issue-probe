@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import os
 
 from conftest import SAMPLE_FRONT_MATTER
 
@@ -47,6 +48,19 @@ def test_counts_measured_at_another_commit_are_reported_as_stale(workspace, run_
 
     assert result.returncode == 0, result.stdout
     assert any("件数の計測時のコミット" in line for line in json.loads(result.stdout)["info"])
+
+
+def test_an_export_older_than_the_findings_is_reported_as_stale(workspace, run_check_items):
+    """Nothing about an outdated paste.tsv looks outdated to the person about to paste it."""
+    paste = workspace.path / "paste.tsv"
+    paste.write_text("No.\n1\n", encoding="utf-8")
+    written = (workspace.path / "findings.md").stat().st_mtime
+    os.utime(paste, (written - 10, written - 10))
+
+    result = run_check_items(workspace.path)
+
+    assert result.returncode == 0, result.stdout
+    assert any("paste.tsv" in line for line in json.loads(result.stdout)["info"])
 
 
 def test_an_investigation_with_no_item_is_accepted_with_a_hint(workspace, run_check_items):

@@ -30,9 +30,8 @@ from collections import Counter
 from pathlib import Path
 from typing import Any
 
-from columns import COLUMNS, parse_effort
-from items import Item, ItemsError, next_item, read_items, verdicts
-from paste import cell_problem
+from columns import COLUMNS, parse_effort, value_problem
+from items import Item, ItemsError, Verdict, next_item, read_items, verdicts
 
 
 class CLIError(Exception):
@@ -87,42 +86,14 @@ def _column_problems(item: Item) -> list[dict[str, Any]]:
         # it and complaining about each would name the same mistake three times.
         if column.origin == "heading" and item.malformed_heading:
             continue
-        value = item.cell(column)
-        if value is None:
-            problems.append(problem("field", f"{column.source} の箇条がありません。", item=item.number))
-            continue
-        if column.origin == "field" and not value:
-            problems.append(
-                problem(
-                    "field",
-                    f"{column.source} が空です。書くことが無い欄は「なし」と書いてください。",
-                    item=item.number,
-                )
-            )
-            continue
-        if column.values and value not in column.values:
-            allowed = " / ".join(column.values)
-            problems.append(
-                problem(
-                    "enum", f"{column.source} が {value!r} です。{allowed} のいずれかにしてください。", item=item.number
-                )
-            )
-        if column.unit and parse_effort(value, column.unit) is None:
-            problems.append(
-                problem(
-                    "effort",
-                    f"{column.source} から工数を読み取れません: {value!r}。"
-                    f"先頭を「数値{column.unit}」で始めてください。",
-                    item=item.number,
-                )
-            )
-        broken = cell_problem(value)
-        if broken is not None:
-            problems.append(problem("cell", f"{column.source} に{broken}が入っています。", item=item.number))
+        found = value_problem(column, item.cell(column))
+        if found is not None:
+            check, detail = found
+            problems.append(problem(check, detail, item=item.number))
     return problems
 
 
-def check_numbering(items: list[Item], allocator: int, resolved: dict[int, str]) -> list[dict[str, Any]]:
+def check_numbering(items: list[Item], allocator: int, resolved: dict[int, Verdict]) -> list[dict[str, Any]]:
     """Hold the item numbers to what an already-pasted sheet row depends on."""
     problems: list[dict[str, Any]] = []
     listed: list[int] = []
@@ -152,13 +123,47 @@ def check_numbering(items: list[Item], allocator: int, resolved: dict[int, str])
             )
         )
 
+    return problems + _retirement_problems(set(listed), allocator, resolved)
+
+
+def _retirement_problems(listed: set[int], allocator: int, resolved: dict[int, Verdict]) -> list[dict[str, Any]]:
+    """Keep a retired number retired, and keep what it claimed on the record.
+
+    A number that comes back carries a pasted row with it: the sheet still shows the
+    old claim on that line, and the new one would read as an edit of it rather than as
+    a different finding.
+    """
+    problems: list[dict[str, Any]] = []
+    for number in sorted(listed):
+        verdict = resolved.get(number)
+        if verdict is not None and verdict.status == "delete":
+            problems.append(
+                problem(
+                    "retired",
+                    f"項目番号 {number} は verdicts.md で delete になっていますが、一覧に残っています。"
+                    "取り下げたなら節を削除し、別の主張なら nextItem から新しい番号を割り当ててください。",
+                    item=number,
+                )
+            )
     for number in range(1, allocator):
-        if number not in listed and resolved.get(number) != "delete":
+        if number in listed:
+            continue
+        verdict = resolved.get(number)
+        if verdict is None or verdict.status != "delete":
             problems.append(
                 problem(
                     "retired",
                     f"項目番号 {number} が欠番ですが、verdicts.md に delete の評決がありません。"
                     "取り下げたなら、その項目が何を主張していたかを評決に残してください。",
+                    item=number,
+                )
+            )
+        elif not verdict.recorded:
+            problems.append(
+                problem(
+                    "retired",
+                    f"項目番号 {number} の delete の評決に本文がありません。"
+                    "節を消したあと、その項目が何を主張していたかはこの評決にしか残りません。",
                     item=number,
                 )
             )
@@ -191,7 +196,23 @@ def collect_info(items: list[Item], directory: Path, code_sha: str) -> list[str]
     elif head != code_sha:
         info.append(f"調査時点の codeSha ({code_sha[:7]}) と現在の HEAD ({head[:7]}) が違います")
     info.extend(_coverage_info(directory / "coverage.json", code_sha))
+    info.extend(_paste_info(directory))
     return info
+
+
+def _paste_info(directory: Path) -> list[str]:
+    """Say when an exported paste no longer describes the findings it came from.
+
+    The export is what a person actually pastes, and nothing about an outdated one
+    looks outdated. Every skill that changes findings.md runs this check afterwards,
+    so this is where a leftover export surfaces.
+    """
+    paste = directory / "paste.tsv"
+    if not paste.is_file():
+        return []
+    if paste.stat().st_mtime < (directory / "findings.md").stat().st_mtime:
+        return ["paste.tsv が findings.md より古いため、export-items で作り直すまで貼れません"]
+    return []
 
 
 def _coverage_info(path: Path, code_sha: str) -> list[str]:

@@ -75,6 +75,30 @@ def test_a_gap_explained_by_a_delete_verdict_is_accepted(workspace, run_check_it
     assert result.returncode == 0, result.stdout
 
 
+def test_a_delete_verdict_with_no_record_is_refused(workspace, run_check_items):
+    """Once the section is gone, a verdict that says nothing has erased the claim."""
+    workspace.write_findings(dict(SAMPLE_FRONT_MATTER, nextItem="4"), item(number="1") + item(number="3"))
+    workspace.write_verdicts(f"# 記録\n\n## {ROUND}\n\n### 2 delete\n\n- 変更: 削除\n- 記載判断: 記載しない\n")
+
+    result = run_check_items(workspace.path)
+
+    assert result.returncode == 1
+    entries = problems(result, "retired")
+    assert [entry["item"] for entry in entries] == [2]
+    assert "本文" in entries[0]["detail"]
+
+
+def test_a_number_retired_by_a_delete_verdict_cannot_come_back(workspace, run_check_items):
+    """The sheet still shows the old claim on that row, so the number cannot be reused."""
+    workspace.write_findings(dict(SAMPLE_FRONT_MATTER, nextItem="3"), item(number="1") + item(number="2"))
+    workspace.write_verdicts(f"# 記録\n\n## {ROUND}\n\n### 2 delete\n\n- 変更: 削除\n\n到達経路が無かった。\n")
+
+    result = run_check_items(workspace.path)
+
+    assert result.returncode == 1
+    assert [entry["item"] for entry in problems(result, "retired")] == [2]
+
+
 def test_the_latest_round_decides_whether_a_gap_is_explained(workspace, run_check_items):
     """Rounds are appended, so an item confirmed after a delete belongs back in the list."""
     workspace.write_findings(dict(SAMPLE_FRONT_MATTER, nextItem="4"), item(number="1") + item(number="3"))

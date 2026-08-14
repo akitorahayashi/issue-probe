@@ -14,6 +14,10 @@ A column carrying `values` holds a closed vocabulary; a column carrying `unit`
 holds a duration whose leading number is summed. No other role is needed, so
 none is declared.
 
+Declaring the columns here also settles what each one accepts. Both the check and
+the export ask this module, so a value one of them refuses cannot be a value the
+other writes into the sheet.
+
 This module is a library: it declares and parses, and never exits or writes.
 """
 
@@ -21,6 +25,8 @@ from __future__ import annotations
 
 import re
 from dataclasses import dataclass
+
+from paste import cell_problem
 
 # The three parts of an item heading. Parsers key their heading values by these names,
 # so a heading column below is resolved without a second mapping.
@@ -61,6 +67,30 @@ COLUMNS: tuple[Column, ...] = (
 
 HEADERS: tuple[str, ...] = tuple(column.header for column in COLUMNS)
 FIELD_LABELS: tuple[str, ...] = tuple(column.source for column in COLUMNS if column.origin == "field")
+
+
+def value_problem(column: Column, value: str | None) -> tuple[str, str] | None:
+    """Name the check a value fails and why, or None when the column accepts it.
+
+    None means the item never wrote the field at all, which is a different mistake from
+    writing it empty: one is a forgotten line, the other is a filled form with a blank.
+    """
+    if value is None:
+        return "field", f"{column.source} の箇条がありません。"
+    if column.origin == "field" and not value:
+        return "field", f"{column.source} が空です。書くことが無い欄は「なし」と書いてください。"
+    if column.values and value not in column.values:
+        allowed = " / ".join(column.values)
+        return "enum", f"{column.source} が {value!r} です。{allowed} のいずれかにしてください。"
+    if column.unit and parse_effort(value, column.unit) is None:
+        return (
+            "effort",
+            f"{column.source} から工数を読み取れません: {value!r}。先頭を「数値{column.unit}」で始めてください。",
+        )
+    broken = cell_problem(value)
+    if broken is not None:
+        return "cell", f"{column.source} に{broken}が入っています。"
+    return None
 
 
 def parse_effort(value: str, unit: str) -> float | None:

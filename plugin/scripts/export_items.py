@@ -10,11 +10,13 @@ maintained by hand. Folding the nested bullets into `1. … 2. …` is this scri
 work, not the writer's.
 
 paste.tsv is a derivative and is rewritten on every run. Editing it changes nothing
-about the investigation; findings.md is the file to edit.
+about the investigation; findings.md is the file to edit. A run that cannot write it
+removes the previous one, because a leftover export looks exactly like a current one
+to the person about to paste it.
 
 Exit codes:
 - 0: paste.tsv was written; the returned fields are what the caller relays
-- 1: findings.md carries a value the sheet cannot take. Nothing is written
+- 1: findings.md carries a value the sheet refuses. Any earlier paste.tsv is removed
 - 2: findings.md cannot be read; stderr carries JSON with an "action"
 """
 
@@ -26,9 +28,9 @@ import sys
 from pathlib import Path
 from typing import Any
 
-from columns import COLUMNS, HEADERS, parse_effort
+from columns import COLUMNS, HEADERS, parse_effort, value_problem
 from items import Item, ItemsError, read_items
-from paste import PasteError, cell_problem, render
+from paste import PasteError, render
 
 
 class CLIError(Exception):
@@ -41,25 +43,23 @@ class CLIError(Exception):
 
 
 def build_rows(items: list[Item]) -> tuple[list[list[str]], list[dict[str, Any]]]:
-    """Turn every item into a sheet row, reporting each value the sheet cannot take."""
+    """Turn every item into a sheet row, reporting each value its column refuses.
+
+    The columns decide what they accept, so this asks the same question the check asks.
+    Reading the rule from anywhere else would let the export write a value the check
+    would have rejected.
+    """
     rows: list[list[str]] = [list(HEADERS)]
     problems: list[dict[str, Any]] = []
     for item in items:
         row: list[str] = []
         for column in COLUMNS:
             value = item.cell(column)
-            if value is None:
-                problems.append(
-                    {"item": item.number, "check": "field", "detail": f"{column.source} の箇条がありません。"}
-                )
-                row.append("")
-                continue
-            broken = cell_problem(value)
-            if broken is not None:
-                problems.append(
-                    {"item": item.number, "check": "cell", "detail": f"{column.source} に{broken}が入っています。"}
-                )
-            row.append(value)
+            found = value_problem(column, value)
+            if found is not None:
+                check, detail = found
+                problems.append({"item": item.number, "check": check, "detail": detail})
+            row.append(value or "")
         rows.append(row)
     return rows, problems
 
@@ -84,15 +84,19 @@ def run(directory: Path) -> tuple[int, dict[str, Any]]:
 
     _, items = read_items(directory / "findings.md")
     rows, problems = build_rows(items)
+    path = directory / "paste.tsv"
     if problems:
-        return 1, {
+        document: dict[str, Any] = {
             "ok": False,
             "items": len(items),
             "problems": problems,
             "hint": "check_items.py を実行して、findings.md の問題を全件確認してください。",
         }
+        if path.is_file():
+            path.unlink()
+            document["removed"] = str(path)
+        return 1, document
 
-    path = directory / "paste.tsv"
     path.write_text(render(rows), encoding="utf-8")
     return 0, {
         "ok": True,

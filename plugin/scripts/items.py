@@ -80,6 +80,14 @@ class Item:
         raise AssertionError(f"column {column.source!r} names no part of an item heading")
 
 
+@dataclass(frozen=True)
+class Verdict:
+    """One `### <番号> <評決>` section of verdicts.md."""
+
+    status: str
+    recorded: bool
+
+
 def split_lines(text: str) -> list[str]:
     """Split on LF alone, keeping every other character inside the line that holds it.
 
@@ -300,17 +308,38 @@ def read_items(path: Path) -> tuple[dict[str, str], list[Item]]:
     return front_matter, parse_items(body)
 
 
-def verdicts(text: str) -> dict[int, str]:
+def verdicts(text: str) -> dict[int, Verdict]:
     """Map each item number to its most recent verdict.
 
     Rounds are appended, so a later round overwrites an earlier one for the same
     item. Reading in file order and letting the last write win reproduces that.
+
+    The body is read alongside the status because a delete verdict is the only record
+    left of the item it removed. A heading with nothing under it would satisfy a check
+    that only looked at the status, and the claim would be gone.
     """
-    latest: dict[int, str] = {}
+    latest: dict[int, Verdict] = {}
+    number: int | None = None
+    status = ""
+    recorded = False
+
+    def flush() -> None:
+        if number is not None:
+            latest[number] = Verdict(status=status, recorded=recorded)
+
     for line, held in fenced(split_lines(text)):
-        if held:
-            continue
-        match = VERDICT_HEADING.match(line)
-        if match is not None:
-            latest[int(match.group(1))] = match.group(2)
+        if not held:
+            heading = VERDICT_HEADING.match(line)
+            if heading is not None:
+                flush()
+                number, status, recorded = int(heading.group(1)), heading.group(2), False
+                continue
+            if SECTION.match(line) is not None:
+                flush()
+                number, recorded = None, False
+                continue
+        # The metadata bullets restate the verdict; only prose says what was removed.
+        if number is not None and line.strip() and not line.lstrip().startswith("-"):
+            recorded = True
+    flush()
     return latest
