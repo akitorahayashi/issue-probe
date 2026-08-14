@@ -1,6 +1,6 @@
 ---
 name: probe-workspace
-description: .tmp/issue-probes/ の正本、編集責任、証拠の辿り方、ID、鮮度、方針の規約。成果物を読み書きするときに使う。
+description: .tmp/issue-probes/ の正本、findings.md の見出し規約、編集責任、ID、鮮度、方針の規約。成果物を読み書きするときに使う。
 ---
 
 # 調査成果物の扱い
@@ -15,14 +15,12 @@ issue-probe は調査対象コードのリポジトリ直下の `.tmp/issue-prob
 └── issue-probes/
     ├── <issue番号>/
     │   ├── issue.json        # issue のメタと本文。調査観点の出どころ。prepare.py が作る
-    │   ├── schema.json       # シートの列構成。report.tsv の検証契約。メインが書く
     │   ├── coverage.json     # 網羅性の検索定義と実測件数。メインが定義し count_hits.py が件数を書く
     │   ├── policy.md         # その issue だけの調査方針。共有方針より優先する。無いことが普通
-    │   ├── findings.md       # front matter、スコープ、観点の対応、該当なし、確定できなかったこと。メインが書く
-    │   ├── findings/<観点>.md # 観点ごとの証跡。issue-investigator が1ファイル1ライターで書く
-    │   ├── report.tsv        # 一覧の正本。シートに載る内容そのもの。メインが書く
-    │   ├── verdicts.md       # 再検証のラウンド記録。メインが統合して書く
-    │   └── issue-comment.md  # issue へ貼る対外報告文。メインが書く
+    │   ├── findings.md       # 一覧と根拠の正本。メインが書く
+    │   ├── verdicts.md       # 再検証と取り下げのラウンド記録。メインが書く
+    │   ├── issue-comment.md  # issue へ貼る対外報告文。メインが書く
+    │   └── paste.tsv         # findings.md の導出物。export-items が書く
     ├── policy.md             # そのリポジトリの全 issue に効く調査方針。無ければ方針なし
     └── <主題>.md             # issue から独立に成り立つ背景知識。関心ごとに1ファイル
 ```
@@ -31,39 +29,75 @@ issue-probe は調査対象コードのリポジトリ直下の `.tmp/issue-prob
 
 ## 正本と派生
 
-report.tsv は一覧の正本である。シートに載る内容そのものを持ち、1列目 No. が項目の不変IDになる。
+findings.md が唯一の正本である。1つの項目が1つの `### <番号>` の節であり、シートに載る文面はその節のラベル付きフィールドが、その主張がなぜ書けるかは同じ節の `#### 根拠` が持つ。一覧と根拠を別のファイルに分けると、同じ主張を2つの語り口で二重に書くことになり、更新が片側にしか届かなくなる。
 
-findings.md と `findings/` は根拠の正本である。report.tsv の各行がなぜそう書けるかは、ここにしか無い。
+paste.tsv は派生である。export-items が findings.md から導出し、実行のたびに作り直す。編集しても調査は変わらない。
 
 issue-comment.md は対外報告文の正本である。一覧に載らない全体判断（改修計画、優先順位、関係者確認事項）はここが持つ。閲覧用の要約を別ファイルに二重で持たない。
 
-`schema.json` と `coverage.json` は契約である。前者はシートの列、後者は網羅性の検索定義を宣言し、いずれも check_rows.py と count_hits.py が読む。
+coverage.json は契約である。網羅性の検索定義を宣言し、count_hits.py が件数を書き、check_items.py が計測時点の鮮度を見る。
 
-report.tsv と findings は現在の状態、verdicts.md は再検証による変更と削除の履歴を持つ。verdicts.md の各 `## <codeSha>` は、そのコミットで実施した1回の再検証を表す。
+findings.md は現在の状態、verdicts.md は再検証と取り下げによる変更の履歴を持つ。verdicts.md の各 `## <codeSha>` は、そのコミットで実施した1回のラウンドを表す。
+
+シートの列構成はワークスペースが持たない。`scripts/columns.py` の `COLUMNS` が全 issue 共通の1箇所として持ち、`source` が項目のどこから読む値かを、`header` がシートのヘッダ文字列を表す。
+
+## findings.md の見出し規約
+
+```markdown
+## 項目
+
+### 2 [高] 番組表のチャンネルID取得
+
+- 該当箇所: RealTimeGuideViewController.swift L318,329,355（3箇所）
+- 本来の経路: 型付きプロパティ経由の共通取得処理
+- 現状: 辞書バックのモデルから文字列キーで取得し、強制キャストしている
+- 想定される事象: APIがidをnullや欠落で返すと番組表表示時に即クラッシュする
+- 影響範囲:
+  - RealTimeGuideViewController.swift チャンネルID取得（L318,329,355） → nil考慮の共通取得へ3箇所一括で置換する
+  - 番組表画面 → チャンネル一覧・番組セル描画・日付切替の横断確認を行う
+- 工数: 4h（設計: 2h/ 実装: 2h）
+- 備考: なし
+
+#### 根拠
+
+<証跡の散文。エクスポートされない>
+```
+
+| 規則 | 内容 |
+|---|---|
+| 項目を開く | `### <番号> [<リスク度>] <項目名>`。番号・リスク度・項目名がそのままシートの3列になる |
+| 項目を閉じる | レベル1〜3の任意の見出し。`####` は閉じないので `#### 根拠` は節の中に残る |
+| フィールド | `- <ラベル>: <値>`。ラベルは `COLUMNS` が定めるものだけで、全て揃っている必要がある |
+| フィールドの値 | コロンの後に書くか、コロンの後を空にしてネストした箇条で書く。ネストは `1. … 2. …` に畳まれて1セルになる |
+| フェンス | フェンス内は構造として読まない。証跡が `###` で始まる出力を引用してよい |
+
+見出しをこの形にしているのは、エディタのアウトラインがそのまま一覧になるからである。番号・リスク度・項目名が見出しにあれば、節を開かずに全体を把握できる。
 
 ## 問いと在り処
 
 | 問い | 読む場所 |
 |---|---|
-| この項目の根拠は何か | `findings/` のいずれかにある `### <番号>` の節 |
+| この項目の根拠は何か | findings.md の同じ番号の節にある `#### 根拠` |
 | 何を調べて何が無かったのか | findings.md の「該当なしと確認した観点」と coverage.json の検索定義 |
 | その件数はどう数えたのか | coverage.json の `searches`。`count_hits.py` が記録した値であり、手で数えた値ではない |
-| シートのどの列に何が入るのか | schema.json の `columns`。順序がシートのヘッダ行と一致する |
+| シートのどの列に何が入るのか | `scripts/columns.py` の `COLUMNS`。並び順がシートのヘッダ行と一致する |
 | 調査依頼には何が書かれていたか | issue.json の `body` と `comments` |
 | 再検証でなぜ変わったか | verdicts.md を新しいラウンドから辿り、同じ番号が最初に現れる節 |
-| 欠番の項目は何だったのか | verdicts.md の delete 評決。取り下げの理由はここにしか残らない |
+| 欠番の項目は何だったのか | verdicts.md の delete 評決。取り下げた項目の主張と理由はここにしか残らない |
 | まだ確定していないことは何か | findings.md の「確定できなかったこと」。誰が何をすれば確定するかまで書く |
-| この調査は現在のコードとどれだけずれているか | findings.md の `codeSha` と現在の HEAD。check_rows.py が差を `info` に出す |
+| この調査は現在のコードとどれだけずれているか | findings.md の `codeSha` と現在の HEAD。check_items.py が差を `info` に出す |
 
 ## ID の規約
 
-report.tsv の1列目 No. が論理的な項目の不変IDである。
+`### <番号>` の番号が論理的な項目の不変IDである。
 
-更新でも削除でも番号を詰め直さない。欠番は再利用しない。シートは一度貼ると行位置が固定されるため、詰め直すと転記済みの行と一覧の対応が壊れる。欠番のある一覧は見た目が不揃いになるが、対応が壊れるより望ましい。
+更新でも取り下げでも番号を詰め直さない。欠番は再利用しない。シートは一度貼ると行位置が固定されるため、詰め直すと転記済みの行と一覧の対応が壊れる。欠番のある一覧は見た目が不揃いになるが、対応が壊れるより望ましい。
 
-findings.md の front matter の `nextItem` は、report.tsv・`findings/`・verdicts.md に現れるすべての番号より大きい。新規項目へ割り当てるたびに1増やす。check_rows.py がこの不変条件を検証する。
+番号は項目を書くときに割り当てる。調査を始める前に観点へ番号の範囲を配らない。配って使われなかった番号は、主張を持たない欠番になる。
 
-削除は report.tsv と `findings/` の現在状態へ反映し、verdicts.md に delete の評決として理由を残す。評決の無い削除は check_rows.py が problem にする。
+findings.md の front matter の `nextItem` は、findings.md と verdicts.md に現れるすべての番号より大きい。新規項目へ割り当てるたびに1増やす。取り下げても下げない。
+
+取り下げは findings.md の節を削除し、verdicts.md に delete の評決として、その項目が何を主張していたかと落とした理由を残す。`1` から `nextItem - 1` までの欠番に delete の評決が無ければ check_items.py が problem にする。番号を消したのに主張が残らない状態を作らないためである。
 
 ## 件数の扱い
 
@@ -77,7 +111,7 @@ findings.md の front matter の `nextItem` は、report.tsv・`findings/`・ver
 
 調査は findings.md の `codeSha` が表す時点のコードに対して成立する。現在との差はユーザーへ伝え、追随には probe-issue の再実行を使う。
 
-`check_rows.py` は `codeSha` と現在の HEAD の差を `info` に載せる。停止はさせない。差があること自体は誤りではなく、報告すべき事実である。
+`check_items.py` は `codeSha` と現在の HEAD の差を `info` に載せる。停止はさせない。差があること自体は誤りではなく、報告すべき事実である。
 
 ## 調査方針
 
@@ -95,8 +129,8 @@ findings.md の front matter の `nextItem` は、report.tsv・`findings/`・ver
 
 ## 手を入れるとき
 
-probe-issue は調査と一覧の作成、verify-items は既存項目の再検証、withdraw-items は指定項目の取り下げを担う。セルの文面は row-style に従う。
+probe-issue は調査と一覧の作成、verify-items は既存項目の再検証、withdraw-items は指定項目の取り下げ、export-items はシート転記用の書き出しを担う。フィールドの文面は row-style に従う。
 
-`findings/` は1ファイル1ライターである。並列で調査するとき、エージェントは自分の担当観点のファイルだけを書く。findings.md と report.tsv と issue-comment.md はメインが書く。
+1ファイル1ライターである。findings.md・verdicts.md・issue-comment.md はメインが書く。サブエージェントはファイルを書かず、調査結果と評決をメインへ返す。並列の単位が観点であるため、単一のライターになれるのはメインだけである。
 
 外向きの書き込みは行わない。シートへの貼り付けと issue への投稿は人が行う。成果物はそのための材料であり、貼れば済む形になっていることが完成条件である。
