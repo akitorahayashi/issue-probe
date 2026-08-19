@@ -5,13 +5,12 @@ description: .tmp/issue-probes/ の正本、findings.md の見出し規約、編
 
 # 調査成果物の扱い
 
-issue-probe は調査対象コードのリポジトリ直下の `.tmp/issue-probes/` に成果物を置く。`.tmp/.gitignore` は `*` だけを持つ。
+issue-probe は調査対象コードのリポジトリ直下の `.tmp/issue-probes/` に成果物を置く。
 
 調査依頼の issue と調査対象のコードは別のリポジトリにあることがある。ワークスペースはコード側に作る。証拠はコードを指すので、証拠と同じ場所に置くほうが辿りやすい。
 
 ```text
 .tmp/
-├── .gitignore
 └── issue-probes/
     ├── <issue番号>/
     │   ├── issue.json        # issue のメタと本文。調査観点の出どころ。prepare.py が作る
