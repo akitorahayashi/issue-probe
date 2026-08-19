@@ -92,10 +92,6 @@ def write_workspace(root: Path, issue: int, document: dict[str, Any]) -> Path:
     directory = root / ".tmp" / "issue-probes" / str(issue)
     directory.mkdir(parents=True, exist_ok=True)
 
-    gitignore = root / ".tmp" / ".gitignore"
-    if not gitignore.exists():
-        gitignore.write_text("*\n", encoding="utf-8")
-
     payload = json.dumps(document, ensure_ascii=False, indent=2) + "\n"
     (directory / "issue.json").write_text(payload, encoding="utf-8")
     return directory

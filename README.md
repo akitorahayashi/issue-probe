@@ -68,7 +68,6 @@ findings.md が唯一の正本である。1つの項目が1つの節で、シー
 
 ```text
 .tmp/
-├── .gitignore
 └── issue-probes/
     ├── policy.md
     └── <issue番号>/
