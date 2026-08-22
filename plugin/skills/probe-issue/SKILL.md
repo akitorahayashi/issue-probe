@@ -3,16 +3,16 @@ name: probe-issue
 description: GitHub issue の調査依頼を調べ、一覧と根拠を持つ findings.md と issue コメント草案を作る。
 argument-hint: <issue番号1, issue番号2...>
 disable-model-invocation: true
-compatibility: Claude Code（サブエージェントの起動と再開に Agent ツールと SendMessage ツールを使う）、python3 3.10以上、repo スコープで認証済みの gh CLI、git、ripgrep
+compatibility: Claude Code または Codex、python3 3.10以上、repo スコープで認証済みの gh CLI、git、ripgrep
 ---
 
 # issue の調査
 
 指定された issue の調査依頼を読み、調査対象コードのリポジトリ直下 `.tmp/issue-probes/<番号>/` に findings.md と issue-comment.md を作る。関連する複数 issue の調査は並行する。
 
-issue-investigator が観点ごとの調査と調査結果の報告、メインがユーザーとの対話、契約の確定、スクリプト、findings.md、issue-comment.md を担当する。成果物はメインだけが書く。
+観点ごとの調査と調査結果の報告はissue-investigator担当、ユーザーとの対話、契約の確定、スクリプト、findings.md、issue-comment.mdはメインが担当する。サブエージェント委譲を利用できる場合は観点ごとに担当を並列起動して識別子を保持し、利用できない場合はメインが同じ責務を順次実行する。成果物はメインだけが書く。
 
-以下の `<plugin-root>` は、この SKILL.md の2階層上として解決する。成果物の正本と編集責任は[調査成果物の扱い](../probe-workspace/SKILL.md)に従う。
+成果物の正本と編集責任は[調査成果物の扱い](../probe-workspace/SKILL.md)に従う。
 
 ## 生成するファイル
 
@@ -32,9 +32,7 @@ prepare.py は `<dir>` と issue.json を用意する。シート転記用の pa
 
 issue 番号ごとに実行する。git の状態を触るため並列にせず、1つずつ回す。
 
-```bash
-python3 <plugin-root>/scripts/prepare.py <issue番号> [--repo <owner/name>]
-```
+[prepare.py](../../scripts/prepare.py)をPython 3で実行し、`<issue番号>`と、必要な場合だけ`--repo <owner/name>`を渡す。
 
 - 終了コード0: `dir` が作業場所になる。`issueRepo` と `codeRepo` が違う場合は、調査対象がコード側であることを確認して進む
 - 終了コード2・4: その issue を止め、stderr の理由と `action` が示す選択肢をユーザーに渡す
@@ -55,9 +53,7 @@ issue.json の `body` と `comments` から、調査観点・スコープ・除�
 
 ### 3. 網羅性の計測
 
-```bash
-python3 <plugin-root>/scripts/count_hits.py <dir>
-```
+[count_hits.py](../../scripts/count_hits.py)をPython 3で実行し、`<dir>`を渡す。
 
 - 終了コード0: 件数が coverage.json に記録された。以降、成果物に書く件数はこの記録を引く
 - 終了コード2・4: その issue を止め、`action` をユーザーに渡す
@@ -66,7 +62,7 @@ python3 <plugin-root>/scripts/count_hits.py <dir>
 
 ### 4. 調査
 
-観点ごとに `issue-probe:issue-investigator` を1つのメッセージで並列起動する。Agent ツールの `subagent_type` は `issue-probe:issue-investigator`。各 prompt に書くのは次の2つだけで、issue の情報は investigator が `<dir>` から読む。
+観点ごとに[issue-investigatorの責務](../../agents/issue-investigator.md)を持つ担当を割り当てる。各担当へ渡すのは次の2つだけで、issueの情報は`<dir>`から読む。
 
 - 作業場所 `<dir>`
 - 担当する観点
@@ -79,7 +75,7 @@ python3 <plugin-root>/scripts/count_hits.py <dir>
 
 項目番号は渡さない。採番は手順5でメインが行う。事前に範囲を配ると、使われなかった番号が主張を持たない欠番になる。
 
-investigator は項目ごとの節と、確定できなかったことを返す。全観点の応答とエージェントIDを受け取ってから手順5へ進む。
+各担当は項目ごとの節と、確定できなかったことを返す。全担当の結果を揃えてから手順5へ進む。
 
 ### 5. 一覧化
 
@@ -96,12 +92,10 @@ investigator は項目ごとの節と、確定できなかったことを返す�
 
 ### 6. 検査
 
-```bash
-python3 <plugin-root>/scripts/check_items.py <dir>
-```
+[check_items.py](../../scripts/check_items.py)をPython 3で実行し、`<dir>`を渡す。
 
 - 終了コード0: 受け入れた。`info` の工数合計とリスク分布を控えて次へ進む
-- 終了コード1: `problems` を種類で分ける。見出し・フィールド・書式のものはメインが findings.md を直す。根拠の不足や内容の誤りは、該当する観点の issue-investigator に `SendMessage` で追加調査を依頼し、返答をメインが反映する
+- 終了コード1: `problems`を種類で分ける。見出し・フィールド・書式のものはメインがfindings.mdを直す。根拠の不足や内容の誤りは該当担当へ返して追加調査し、その結果を反映する
 - 終了コード2: findings.md が読めない。`action` に従って直してから再実行する
 
 終了コード0まで繰り返す。

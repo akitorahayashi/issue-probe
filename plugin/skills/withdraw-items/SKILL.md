@@ -12,7 +12,7 @@ compatibility: python3 3.10以上、git
 
 反証で不成立と判定したものは verify-items が扱う。このスキルは、ユーザーが読んで「これは出さない」と決めた項目を落とすためのものである。
 
-以下の `<plugin-root>` は、この SKILL.md の2階層上として解決する。成果物の正本と編集責任は[調査成果物の扱い](../probe-workspace/SKILL.md)に従う。
+成果物の正本と編集責任は[調査成果物の扱い](../probe-workspace/SKILL.md)に従う。
 
 ## 手順
 
@@ -41,9 +41,7 @@ issue 番号ごとに実行する。
 
 ### 3. 受け入れ
 
-```bash
-python3 <plugin-root>/scripts/check_items.py <dir>
-```
+[check_items.py](../../scripts/check_items.py)をPython 3で実行し、`<dir>`を渡す。
 
 - 終了コード0: 取り下げが整合した
 - 終了コード1: `problems` を解消する。delete の評決を書き忘れると、その番号が「主張の残らない欠番」として検出される

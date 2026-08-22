@@ -1,0 +1,20 @@
+{
+  "name": "issue-probe",
+  "interface": {
+    "displayName": "Issue Probe"
+  },
+  "plugins": [
+    {
+      "name": "issue-probe",
+      "source": {
+        "source": "local",
+        "path": "./plugin"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    }
+  ]
+}

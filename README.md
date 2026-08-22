@@ -1,8 +1,8 @@
 # issue-probe
 
-GitHub 経由でインストールする、Claude Code 向けの調査ワークフロープラグイン。GitHub issue に書かれた調査依頼を読み、網羅的に調べ、一覧と根拠を1枚に持つ findings.md、共有スプレッドシートへ貼るだけの TSV、issue へ貼るコメント草案までを作る。調査対象コードのリポジトリ直下 `.tmp/issue-probes/` に置く成果物で各工程が連携する。
+GitHub 経由でインストールする、Claude Code / Codex 向けの調査ワークフロープラグイン。GitHub issue に書かれた調査依頼を読み、網羅的に調べ、一覧と根拠を1枚に持つ findings.md、共有スプレッドシートへ貼るだけの TSV、issue へ貼るコメント草案までを作る。調査対象コードのリポジトリ直下 `.tmp/issue-probes/` に置く成果物で各工程が連携する。
 
-リポジトリ直下がマーケットプレイスルート、`plugin/` がプラグインルート。ユーザーと対話する入口は skills、観点ごとの調査と反証は agents、共有CLIは `plugin/scripts/` が担う。
+リポジトリ直下がマーケットプレイスルート、`plugin/`がプラグインルート。ユーザーと対話する入口はskills、観点ごとの調査と反証は独立した担当、共有CLIは`plugin/scripts/`が担う。担当はサブエージェント委譲を利用できれば並列に動き、利用できなければ入口スキルのメインセッションが順次実行する。
 
 外向きの書き込みは行わない。シートへの貼り付けと issue への投稿は人が行う。
 
@@ -32,7 +32,7 @@ verify-items は、一覧の各項目を証拠の再現と前提への反証に�
 
 probe-workspace と row-style は工程ではない。生成済み成果物について質問されたときや、フィールドの文面を扱うときに、入口スキルから独立して使われる。
 
-エージェントはファイルを書かない。成果物を書くのは入口スキルのメインで、これは1ファイル1ライターを保つためである。並列の単位が観点であるため、単一のライターになれるのはメインだけになる。
+委譲された担当はファイルを書かない。成果物を書くのは入口スキルのメインで、これは1ファイル1ライターを保つためである。並列の単位が観点であるため、単一のライターになれるのはメインだけになる。
 
 ## 成果物
 
@@ -102,6 +102,11 @@ findings.md が唯一の正本である。1つの項目が1つの節で、シー
 ```bash
 claude plugin marketplace add akitorahayashi/issue-probe
 claude plugin install issue-probe@issue-probe
+```
+
+```bash
+codex plugin marketplace add akitorahayashi/issue-probe
+codex plugin add issue-probe@issue-probe
 ```
 
 ローカル開発では `claude --plugin-dir ./plugin` でそのセッションだけプラグインルートを読み込める。

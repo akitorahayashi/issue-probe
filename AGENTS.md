@@ -18,7 +18,9 @@ probe-issue ──→ findings.md + issue-comment.md ──→ export-items ─�
 ## Architecture
 
 The repository root is the marketplace root; `plugin/` is the plugin root. This
-is a Claude Code plugin only; no Codex manifest exists.
+is a Claude Code and Codex plugin. Claude Code can use the bundled agents; Codex
+uses available built-in or configured subagents. When delegation is unavailable,
+the entry skill performs the same role sequentially in its main session.
 
 | Component | Name | Responsibility |
 |---|---|---|
@@ -31,9 +33,10 @@ is a Claude Code plugin only; no Codex manifest exists.
 | Agent | issue-investigator | Investigate one axis and report its item sections |
 | Agent | item-verifier | Refute assigned items and report its verdicts |
 
-Agents write no files. The entry skill's main writes every artifact, which is how
-one-writer-per-file is kept: the unit of parallelism is the investigation axis, so
-main is the only writer that can be single.
+Delegated investigators and verifiers write no files. The entry skill's main
+writes every artifact, which is how one-writer-per-file is kept: the unit of
+parallelism is the investigation axis, so main is the only writer that can be
+single.
 
 Shared runtime scripts live under `plugin/scripts/`. CLIs own every side effect
 (gh, git, ripgrep, filesystem); libraries stay pure.
@@ -66,7 +69,8 @@ Skill documents, agent definitions, templates, and investigation artifacts are
 Japanese. Repository engineering documentation, script docstrings, and test
 names are English.
 
-The plugin version lives in `plugin/.claude-plugin/plugin.json`. Runtime code
+The plugin identity lives in `plugin/.claude-plugin/plugin.json` and
+`plugin/.codex-plugin/plugin.json`. Runtime code
 uses only the Python standard library; development dependencies live in
 pyproject.toml.
 

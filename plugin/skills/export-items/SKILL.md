@@ -12,7 +12,7 @@ compatibility: python3 3.10以上、git
 
 paste.tsv は findings.md の導出物である。毎回作り直されるので、直すのは findings.md のほうである。
 
-以下の `<plugin-root>` は、この SKILL.md の2階層上として解決する。成果物の正本と編集責任は[調査成果物の扱い](../probe-workspace/SKILL.md)に従う。
+成果物の正本と編集責任は[調査成果物の扱い](../probe-workspace/SKILL.md)に従う。
 
 ## 手順
 
@@ -20,9 +20,7 @@ paste.tsv は findings.md の導出物である。毎回作り直されるので
 
 依頼文から issue の番号を取る。受け取れなければ質問し、回答を得てから進める。issue 番号ごとに実行する。
 
-```bash
-python3 <plugin-root>/scripts/check_items.py <dir>
-```
+[check_items.py](../../scripts/check_items.py)をPython 3で実行し、`<dir>`を渡す。
 
 - 終了コード0: `info` の工数合計とリスク度の分布を控えて書き出しへ進む
 - 終了コード1: `problems` を解消してから書き出す。整合していない一覧を貼ると、シート側の行を後から直すことになる
@@ -32,9 +30,7 @@ python3 <plugin-root>/scripts/check_items.py <dir>
 
 ### 2. 書き出し
 
-```bash
-python3 <plugin-root>/scripts/export_items.py <dir>
-```
+[export_items.py](../../scripts/export_items.py)をPython 3で実行し、`<dir>`を渡す。
 
 - 終了コード0: `path` に paste.tsv が書かれた
 - 終了コード1: `problems` を findings.md 側で解消して再実行する。前回の paste.tsv があれば削除される。古い書き出しは現行のものと見分けが付かないため残さない

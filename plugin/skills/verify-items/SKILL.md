@@ -3,7 +3,7 @@ name: verify-items
 description: 一覧の項目を反証で検証し、findings.md と issue-comment.md を更新して verdicts.md に記録する。
 argument-hint: <issue番号1, issue番号2...>
 disable-model-invocation: true
-compatibility: Claude Code（サブエージェントの起動と再開に Agent ツールと SendMessage ツールを使う）、python3 3.10以上、git、ripgrep
+compatibility: Claude Code または Codex、python3 3.10以上、git、ripgrep
 ---
 
 # 項目の再検証
@@ -12,9 +12,9 @@ compatibility: Claude Code（サブエージェントの起動と再開に Agent
 
 一覧は同じ調査の流れの中で作られており、同じ推論経路で確認しても独立性がない。シートに貼れば他プラットフォームのチームと発注側が読むため、根拠の弱い断定が外に出る前に崩しにいく。
 
-item-verifier が担当項目の反証と評決の報告、メインがユーザーとの対話、評決の記録、成果物への反映を担当する。成果物はメインだけが書く。
+担当項目の反証と評決の報告はitem-verifier担当、ユーザーとの対話、評決の記録、成果物への反映はメインが担当する。サブエージェント委譲を利用できる場合は担当を並列起動して識別子を保持し、利用できない場合はメインが同じ責務を順次実行する。成果物はメインだけが書く。
 
-以下の `<plugin-root>` は、この SKILL.md の2階層上として解決する。成果物の正本と編集責任は[調査成果物の扱い](../probe-workspace/SKILL.md)に従う。
+成果物の正本と編集責任は[調査成果物の扱い](../probe-workspace/SKILL.md)に従う。
 
 ## 更新するファイル
 
@@ -32,9 +32,7 @@ item-verifier が担当項目の反証と評決の報告、メインがユーザ
 
 issue 番号ごとに実行する。
 
-```bash
-python3 <plugin-root>/scripts/check_items.py <dir>
-```
+[check_items.py](../../scripts/check_items.py)をPython 3で実行し、`<dir>`を渡す。
 
 - 終了コード0: 現在の一覧は整合している。全項目を検証対象にする
 - 終了コード1: `problems` を先に解消する。整合していない一覧を反証しても、崩れているのが主張なのか記述なのか切り分けられない
@@ -48,7 +46,7 @@ python3 <plugin-root>/scripts/check_items.py <dir>
 
 対象を担当に分ける。項目数ではなく反証の型で分ける。「本当に壊れるのか」「本当に経路が繋がっているか」「本当に乖離しているか」のように、崩し方が同じものをまとめる。上限は5体。
 
-全担当の `issue-probe:item-verifier` を1つのメッセージで並列起動する。Agent ツールの `subagent_type` は `issue-probe:item-verifier`。各 prompt に書くのは次だけで、項目の内容は verifier が `<dir>` から読む。
+[item-verifierの責務](../../agents/item-verifier.md)を持つ担当を割り当てる。各担当へ渡すのは次だけで、項目の内容は`<dir>`から読む。
 
 - 作業場所 `<dir>`
 - 担当する項目番号
@@ -57,7 +55,7 @@ python3 <plugin-root>/scripts/check_items.py <dir>
 
 崩してほしい前提は具体的に書く。「本当か確かめて」ではなく、「この主張は◯◯を仮定しているが、それは確認されていない」の形で渡す。ここが反証の質を決める。
 
-verifier は項目ごとの評決の節と記載判断を返す。全担当の応答とエージェントIDを受け取ってから手順3へ進む。
+各担当は項目ごとの評決の節と記載判断を返す。全担当の結果を揃えてから手順3へ進む。
 
 ### 3. 記録と反映
 
@@ -76,9 +74,7 @@ verifier は項目ごとの評決の節と記載判断を返す。全担当の�
 
 ### 4. 受け入れ
 
-```bash
-python3 <plugin-root>/scripts/check_items.py <dir>
-```
+[check_items.py](../../scripts/check_items.py)をPython 3で実行し、`<dir>`を渡す。
 
 終了コード0まで直す。delete した項目の delete 評決を書き忘れると、その番号が「主張の残らない欠番」としてここで problem になる。
 
