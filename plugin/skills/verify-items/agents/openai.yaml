@@ -1,0 +1,5 @@
+interface:
+  display_name: "Verify issue findings"
+  short_description: "Refute findings and record verification verdicts"
+policy:
+  allow_implicit_invocation: false

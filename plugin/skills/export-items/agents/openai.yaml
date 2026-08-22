@@ -1,0 +1,5 @@
+interface:
+  display_name: "Export issue findings"
+  short_description: "Export findings into paste-ready spreadsheet TSV"
+policy:
+  allow_implicit_invocation: false

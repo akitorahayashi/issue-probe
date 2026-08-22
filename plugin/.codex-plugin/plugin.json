@@ -1,6 +1,6 @@
 {
   "name": "issue-probe",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "Staged investigation workflow: probe a GitHub issue, optionally re-verify items, and hand off one findings document plus a paste-ready spreadsheet export and issue comment draft.",
   "skills": "./skills/",
   "author": {

@@ -1,0 +1,5 @@
+interface:
+  display_name: "Withdraw issue findings"
+  short_description: "Withdraw selected findings without renumbering"
+policy:
+  allow_implicit_invocation: false

@@ -1,0 +1,5 @@
+interface:
+  display_name: "Probe GitHub issues"
+  short_description: "Investigate GitHub issues and draft evidence reports"
+policy:
+  allow_implicit_invocation: false
