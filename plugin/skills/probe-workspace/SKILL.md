@@ -1,6 +1,6 @@
 ---
 name: probe-workspace
-description: .tmp/issue-probes/ の正本、findings.md の見出し規約、編集責任、ID、鮮度、方針の規約。成果物を読み書きするときに使う。
+description: .tmp/issue-probes/ の意味、findings.md の見出し規約、編集責任、ID、鮮度、方針の規約。成果物を読み書きするときに使う。.tmp/issue-probes/ に関連しない作業では読まない。
 ---
 
 # 調査成果物の扱い

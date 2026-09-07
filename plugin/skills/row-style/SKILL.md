@@ -1,6 +1,6 @@
 ---
 name: row-style
-description: findings.md の項目のフィールドを、共有スプレッドシートの読み手に向けて整える。新規作成または部分修正で未読なら使う。
+description: findings.md の項目のフィールドを、共有スプレッドシートの読み手に向けて整える。新規作成または部分修正で未読なら使う。.tmp/issue-probes/ に関連しない作業では読まない。
 ---
 
 # 一覧セルの文体
