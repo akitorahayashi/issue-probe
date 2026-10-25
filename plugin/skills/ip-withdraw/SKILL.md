@@ -1,5 +1,5 @@
 ---
-name: withdraw-items
+name: ip-withdraw
 description: 指定した項目を findings.md から取り下げ、番号を詰めずに欠番として残す。
 argument-hint: <issue番号:項目番号[,項目番号...] ...>
 disable-model-invocation: true
@@ -8,11 +8,11 @@ compatibility: python3 3.10以上、git
 
 # 項目の取り下げ
 
-`withdraw-items 320:3,7 1474:2` の形で指定された項目を、`.tmp/issue-probes/<番号>/findings.md` から取り下げる。
+`ip-withdraw 320:3,7 1474:2` の形で指定された項目を、`.tmp/issue-probes/<番号>/findings.md` から取り下げる。
 
-反証で不成立と判定したものは verify-items が扱う。このスキルは、ユーザーが読んで「これは出さない」と決めた項目を落とすためのものである。
+反証で不成立と判定したものは ip-verify が扱う。このスキルは、ユーザーが読んで「これは出さない」と決めた項目を落とすためのものである。
 
-成果物の正本と編集責任は[調査成果物の扱い](../probe-workspace/SKILL.md)に従う。
+成果物の正本と編集責任は[調査成果物の扱い](../ip-workspace/SKILL.md)に従う。
 
 ## 手順
 
@@ -51,7 +51,7 @@ issue 番号ごとに実行する。
 
 issue 番号ごとに、取り下げた番号と残った項目数、更新後の工数合計とリスク分布を伝える。
 
-シートへ貼る形が要る場合は `export-items <番号>` を示す。
+シートへ貼る形が要る場合は `ip-export <番号>` を示す。
 
 ## 更新範囲
 

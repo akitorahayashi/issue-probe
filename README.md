@@ -9,28 +9,28 @@ GitHub 経由でインストールする、Claude Code / Codex 向けの調査�
 ## ワークフロー
 
 ```text
-probe-issue ──→ findings.md + issue-comment.md ──→ export-items ──→ paste.tsv ──→ 人がシートへ転記
+ip-01-probe ──→ findings.md + issue-comment.md ──→ ip-export ──→ paste.tsv ──→ 人がシートへ転記
                     │
-                    ├── verify-items（任意）──→ findings.md の更新 + verdicts.md
-                    └── withdraw-items ────────→ 指定項目の取り下げ
+                    ├── ip-verify（任意）──→ findings.md の更新 + verdicts.md
+                    └── ip-withdraw ────────→ 指定項目の取り下げ
 ```
 
-verify-items は、一覧の各項目を証拠の再現と前提への反証によって疑い直す任意工程である。件数主張は必ず数え直し、リスク度は判定基準と突き合わせ、確定できないものは「誰が何をすれば確定するか」まで書いて残す。
+ip-verify は、一覧の各項目を証拠の再現と前提への反証によって疑い直す任意工程である。件数主張は必ず数え直し、リスク度は判定基準と突き合わせ、確定できないものは「誰が何をすれば確定するか」まで書いて残す。
 
 ## コンポーネント
 
 | 種別 | 名前 | 役割 |
 |---|---|---|
-| 入口スキル | probe-issue | issue から調査観点とスコープを読み、検索定義を確定し、観点ごとに調査を並列実行して findings.md と issue-comment.md を作る |
-| 入口スキル | verify-items | 既存項目を反証し、評決を findings.md へ反映して verdicts.md に経緯を残す |
-| 入口スキル | withdraw-items | `issue番号:No` で指定した項目を、番号を詰めずに取り下げる |
-| 入口スキル | export-items | findings.md からシートへ貼れる paste.tsv を導出する |
-| 判断スキル | probe-workspace | `.tmp/issue-probes/` の構造、正本、findings.md の見出し規約、ID と鮮度、方針の優先順位を定める |
-| 判断スキル | row-style | シートのセルに載る日本語の規約を定める |
+| 入口スキル | ip-01-probe | issue から調査観点とスコープを読み、検索定義を確定し、観点ごとに調査を並列実行して findings.md と issue-comment.md を作る |
+| 入口スキル | ip-verify | 既存項目を反証し、評決を findings.md へ反映して verdicts.md に経緯を残す |
+| 入口スキル | ip-withdraw | `issue番号:No` で指定した項目を、番号を詰めずに取り下げる |
+| 入口スキル | ip-export | findings.md からシートへ貼れる paste.tsv を導出する |
+| 判断スキル | ip-workspace | `.tmp/issue-probes/` の構造、正本、findings.md の見出し規約、ID と鮮度、方針の優先順位を定める |
+| 判断スキル | ip-row-style | シートのセルに載る日本語の規約を定める |
 | エージェント | issue-investigator | 担当観点を調査し、項目の節を報告する |
 | エージェント | item-verifier | 担当項目を反証し、評決を報告する |
 
-probe-workspace と row-style は工程ではない。生成済み成果物について質問されたときや、フィールドの文面を扱うときに、入口スキルから独立して使われる。
+ip-workspace と ip-row-style は工程ではない。生成済み成果物について質問されたときや、フィールドの文面を扱うときに、入口スキルから独立して使われる。
 
 委譲された担当はファイルを書かない。成果物を書くのは入口スキルのメインで、これは1ファイル1ライターを保つためである。並列の単位が観点であるため、単一のライターになれるのはメインだけになる。
 
@@ -56,10 +56,10 @@ findings.md が唯一の正本である。1つの項目が1つの節で、シー
 <証跡の散文。シートには出ない>
 ```
 
-見出しの番号・リスク度・項目名と、7つのフィールドが、そのままシートの10列になる。長い列挙はネストした箇条のまま書き、`1. … 2. …` への畳み込みは export-items が行う。
+見出しの番号・リスク度・項目名と、7つのフィールドが、そのままシートの10列になる。長い列挙はネストした箇条のまま書き、`1. … 2. …` への畳み込みは ip-export が行う。
 
 - `findings.md`: 一覧と根拠の正本。front matter・スコープと除外・網羅性・項目・該当なしと確認した観点・確定できなかったこと
-- `paste.tsv`: findings.md の導出物。export-items が実行のたびに作り直す
+- `paste.tsv`: findings.md の導出物。ip-export が実行のたびに作り直す
 - `issue-comment.md`: issue へ貼る対外報告文の正本。要約・改修計画・関係者確認事項
 - `coverage.json`: 網羅性の検索定義と実測件数
 - `verdicts.md`: 反証検証と取り下げの追記記録

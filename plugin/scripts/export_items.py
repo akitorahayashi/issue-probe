@@ -80,7 +80,7 @@ def summarise(items: list[Item]) -> list[dict[str, Any]]:
 
 def run(directory: Path) -> tuple[int, dict[str, Any]]:
     if not directory.is_dir():
-        raise CLIError(f"{directory} がありません。", "probe-issue の準備を先に実行してください。")
+        raise CLIError(f"{directory} がありません。", "ip-01-probe の準備を先に実行してください。")
 
     _, items = read_items(directory / "findings.md")
     rows, problems = build_rows(items)

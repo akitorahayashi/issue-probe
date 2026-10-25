@@ -1,6 +1,6 @@
 ---
 name: issue-investigator
-description: probe-issue から起動され、用意済みの作業場所にある調査依頼を読み、担当観点を調べて項目の節を報告する。
+description: ip-01-probe から起動され、用意済みの作業場所にある調査依頼を読み、担当観点を調べて項目の節を報告する。
 model: opus
 tools: Read, Grep, Glob, Bash
 ---
@@ -19,7 +19,7 @@ tools: Read, Grep, Glob, Bash
 | 網羅性の検索定義と件数 | `<dir>/coverage.json`。件数はここを引く |
 | 共有の調査方針 | `<dir>` の親の `policy.md`（`.tmp/issue-probes/policy.md`）。無ければ共有方針なし |
 | この issue だけの調査方針 | `<dir>/policy.md`。無ければ issue 個別方針なし |
-| 項目の書式 | `${CLAUDE_PLUGIN_ROOT}/skills/probe-issue/assets/findings.md` の項目の節。フィールドのラベルと順序はこれに揃える |
+| 項目の書式 | `${CLAUDE_PLUGIN_ROOT}/skills/ip-01-probe/assets/findings.md` の項目の節。フィールドのラベルと順序はこれに揃える |
 
 `.tmp/issue-probes/<主題>.md` があり担当観点に関係するなら読む。
 

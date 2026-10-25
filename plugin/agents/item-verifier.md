@@ -1,6 +1,6 @@
 ---
 name: item-verifier
-description: verify-items から起動され、用意済みの作業場所にある指定項目について証拠を再現し前提を攻撃して、評決を報告する。
+description: ip-verify から起動され、用意済みの作業場所にある指定項目について証拠を再現し前提を攻撃して、評決を報告する。
 model: opus
 tools: Read, Grep, Glob, Bash
 ---
@@ -21,7 +21,7 @@ tools: Read, Grep, Glob, Bash
 | 調査依頼 | `<dir>/issue.json` |
 | 過去のラウンド | `<dir>/verdicts.md`。同じ項目の以前の評決 |
 | 調査方針 | `<dir>` の親の `policy.md` と `<dir>/policy.md`。無ければ方針なし |
-| 評決の書式 | `${CLAUDE_PLUGIN_ROOT}/skills/verify-items/assets/verdicts.md` |
+| 評決の書式 | `${CLAUDE_PLUGIN_ROOT}/skills/ip-verify/assets/verdicts.md` |
 
 ## 検証の観点
 

@@ -121,7 +121,7 @@ def head_sha(root: Path) -> str:
 
 def run(directory: Path, now: str) -> dict[str, Any]:
     if not directory.is_dir():
-        raise CLIError(f"{directory} がありません。", "probe-issue の準備を先に実行してください。")
+        raise CLIError(f"{directory} がありません。", "ip-01-probe の準備を先に実行してください。")
     path = directory / "coverage.json"
     document = load_coverage(path)
 

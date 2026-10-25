@@ -1,5 +1,5 @@
 ---
-name: probe-issue
+name: ip-01-probe
 description: GitHub issue の調査依頼を調べ、一覧と根拠を持つ findings.md と issue コメント草案を作る。
 argument-hint: <issue番号1, issue番号2...>
 disable-model-invocation: true
@@ -12,7 +12,7 @@ compatibility: Claude Code または Codex、python3 3.10以上、repo スコー
 
 観点ごとの調査と調査結果の報告はissue-investigator担当、ユーザーとの対話、契約の確定、スクリプト、findings.md、issue-comment.mdはメインが担当する。サブエージェント委譲を利用できる場合は観点ごとに担当を並列起動して識別子を保持し、利用できない場合はメインが同じ責務を順次実行する。成果物はメインだけが書く。
 
-成果物の正本と編集責任は[調査成果物の扱い](../probe-workspace/SKILL.md)に従う。
+成果物の正本と編集責任は[調査成果物の扱い](../ip-workspace/SKILL.md)に従う。
 
 ## 生成するファイル
 
@@ -22,7 +22,7 @@ compatibility: Claude Code または Codex、python3 3.10以上、repo スコー
 | `<dir>/findings.md` | 一覧と根拠の正本。[findings](assets/findings.md)をメインが実体化する |
 | `<dir>/issue-comment.md` | issue へ貼る報告文。[issue-comment](assets/issue-comment.md)をメインが実体化する |
 
-prepare.py は `<dir>` と issue.json を用意する。シート転記用の paste.tsv は export-items が作る。
+prepare.py は `<dir>` と issue.json を用意する。シート転記用の paste.tsv は ip-export が作る。
 
 ## 手順
 
@@ -79,9 +79,9 @@ issue.json の `body` と `comments` から、調査観点・スコープ・除�
 
 ### 5. 一覧化
 
-全観点の応答を読み、[一覧セルの文体](../row-style/SKILL.md)に従って `<dir>/findings.md` を書く。
+全観点の応答を読み、[一覧セルの文体](../ip-row-style/SKILL.md)に従って `<dir>/findings.md` を書く。
 
-- 見出しと項目の形式は[調査成果物の扱い](../probe-workspace/SKILL.md)の見出し規約に従う
+- 見出しと項目の形式は[調査成果物の扱い](../ip-workspace/SKILL.md)の見出し規約に従う
 - 観点をまたいで同じ原因・同じ直し方になるものは1項目に統合する。観点で分けて調べたことと、項目の切り方は別である
 - 番号を1から振るのは findings.md が無いときだけ。既にある場合はコードの変化に追随する再実行なので、同じ主張には既存の番号をそのまま使い、新しい主張だけを `nextItem` から割り当てる。取り下げ済みの番号は再利用しない
 - 番号は昇順に並べ、`nextItem` を割り当てた最後の番号より1大きい値にする
@@ -116,9 +116,9 @@ issue 番号ごとに次を伝える。
 次の入口を示す。
 
 ```text
-export-items <番号>
-verify-items <番号1> <番号2>
-withdraw-items <番号1>:3,7
+ip-export <番号>
+ip-verify <番号1> <番号2>
+ip-withdraw <番号1>:3,7
 ```
 
 ## 規律

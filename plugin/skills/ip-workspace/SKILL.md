@@ -1,5 +1,5 @@
 ---
-name: probe-workspace
+name: ip-workspace
 description: .tmp/issue-probes/ の意味、findings.md の見出し規約、編集責任、ID、鮮度、方針の規約。成果物を読み書きするときに使う。.tmp/issue-probes/ に関連しない作業では読まない。
 ---
 
@@ -19,7 +19,7 @@ issue-probe は調査対象コードのリポジトリ直下の `.tmp/issue-prob
     │   ├── findings.md       # 一覧と根拠の正本。メインが書く
     │   ├── verdicts.md       # 再検証と取り下げのラウンド記録。メインが書く
     │   ├── issue-comment.md  # issue へ貼る対外報告文。メインが書く
-    │   └── paste.tsv         # findings.md の導出物。export-items が書く
+    │   └── paste.tsv         # findings.md の導出物。ip-export が書く
     ├── policy.md             # そのリポジトリの全 issue に効く調査方針。無ければ方針なし
     └── <主題>.md             # issue から独立に成り立つ背景知識。関心ごとに1ファイル
 ```
@@ -30,7 +30,7 @@ issue-probe は調査対象コードのリポジトリ直下の `.tmp/issue-prob
 
 findings.md が唯一の正本である。1つの項目が1つの `### <番号>` の節であり、シートに載る文面はその節のラベル付きフィールドが、その主張がなぜ書けるかは同じ節の `#### 根拠` が持つ。一覧と根拠を別のファイルに分けると、同じ主張を2つの語り口で二重に書くことになり、更新が片側にしか届かなくなる。
 
-paste.tsv は派生である。export-items が findings.md から導出し、実行のたびに作り直す。編集しても調査は変わらない。
+paste.tsv は派生である。ip-export が findings.md から導出し、実行のたびに作り直す。編集しても調査は変わらない。
 
 issue-comment.md は対外報告文の正本である。一覧に載らない全体判断（改修計画、優先順位、関係者確認事項）はここが持つ。閲覧用の要約を別ファイルに二重で持たない。
 
@@ -110,11 +110,11 @@ delete の評決がある番号は一覧に戻さない。シートには同じ�
 
 ## 鮮度の確認
 
-調査は findings.md の `codeSha` が表す時点のコードに対して成立する。現在との差はユーザーへ伝え、追随には probe-issue の再実行を使う。
+調査は findings.md の `codeSha` が表す時点のコードに対して成立する。現在との差はユーザーへ伝え、追随には ip-01-probe の再実行を使う。
 
 `check_items.py` は `codeSha` と現在の HEAD の差を `info` に載せる。停止はさせない。差があること自体は誤りではなく、報告すべき事実である。
 
-paste.tsv は findings.md より新しいときだけ現行である。findings.md を変えた時点で前回の書き出しは古くなるが、ファイルの見た目からは分からないため、check_items.py が古い paste.tsv を `info` に載せる。貼る前に export-items で作り直す。
+paste.tsv は findings.md より新しいときだけ現行である。findings.md を変えた時点で前回の書き出しは古くなるが、ファイルの見た目からは分からないため、check_items.py が古い paste.tsv を `info` に載せる。貼る前に ip-export で作り直す。
 
 ## 調査方針
 
@@ -132,7 +132,7 @@ paste.tsv は findings.md より新しいときだけ現行である。findings.
 
 ## 手を入れるとき
 
-probe-issue は調査と一覧の作成、verify-items は既存項目の再検証、withdraw-items は指定項目の取り下げ、export-items はシート転記用の書き出しを担う。フィールドの文面は row-style に従う。
+ip-01-probe は調査と一覧の作成、ip-verify は既存項目の再検証、ip-withdraw は指定項目の取り下げ、ip-export はシート転記用の書き出しを担う。フィールドの文面は ip-row-style に従う。
 
 1ファイル1ライターである。findings.md・verdicts.md・issue-comment.md はメインが書く。サブエージェントはファイルを書かず、調査結果と評決をメインへ返す。並列の単位が観点であるため、単一のライターになれるのはメインだけである。
 

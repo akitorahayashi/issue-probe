@@ -9,10 +9,10 @@ investigation across platforms, and a comment draft that reports the result back
 on the issue. The plugin never writes outward; a person pastes and posts.
 
 ```text
-probe-issue ──→ findings.md + issue-comment.md ──→ export-items ──→ paste.tsv ──→ human pastes
+ip-01-probe ──→ findings.md + issue-comment.md ──→ ip-export ──→ paste.tsv ──→ human pastes
                     │
-                    ├── verify-items (optional) ──→ findings.md updated + verdicts.md
-                    └── withdraw-items ───────────→ named items retired
+                    ├── ip-verify (optional) ──→ findings.md updated + verdicts.md
+                    └── ip-withdraw ───────────→ named items retired
 ```
 
 ## Architecture
@@ -24,12 +24,12 @@ the entry skill performs the same role sequentially in its main session.
 
 | Component | Name | Responsibility |
 |---|---|---|
-| Entry skill | probe-issue | Read the issue, fix the coverage contract, fan out investigators, assemble findings.md, draft the issue comment |
-| Entry skill | verify-items | Re-verify existing items by refutation and record verdicts |
-| Entry skill | withdraw-items | Retire named items without renumbering |
-| Entry skill | export-items | Derive the sheet paste from findings.md |
-| Judgment skill | probe-workspace | Structure, canonical files, the findings.md heading contract, IDs, freshness |
-| Judgment skill | row-style | How a spreadsheet cell is written for a mixed engineering and business audience |
+| Entry skill | ip-01-probe | Read the issue, fix the coverage contract, fan out investigators, assemble findings.md, draft the issue comment |
+| Entry skill | ip-verify | Re-verify existing items by refutation and record verdicts |
+| Entry skill | ip-withdraw | Retire named items without renumbering |
+| Entry skill | ip-export | Derive the sheet paste from findings.md |
+| Judgment skill | ip-workspace | Structure, canonical files, the findings.md heading contract, IDs, freshness |
+| Judgment skill | ip-row-style | How a spreadsheet cell is written for a mixed engineering and business audience |
 | Agent | issue-investigator | Investigate one axis and report its item sections |
 | Agent | item-verifier | Refute assigned items and report its verdicts |
 

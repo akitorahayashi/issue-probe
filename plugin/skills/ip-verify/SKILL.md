@@ -1,5 +1,5 @@
 ---
-name: verify-items
+name: ip-verify
 description: 一覧の項目を反証で検証し、findings.md と issue-comment.md を更新して verdicts.md に記録する。
 argument-hint: <issue番号1, issue番号2...>
 disable-model-invocation: true
@@ -14,7 +14,7 @@ compatibility: Claude Code または Codex、python3 3.10以上、git、ripgrep
 
 担当項目の反証と評決の報告はitem-verifier担当、ユーザーとの対話、評決の記録、成果物への反映はメインが担当する。サブエージェント委譲を利用できる場合は担当を並列起動して識別子を保持し、利用できない場合はメインが同じ責務を順次実行する。成果物はメインだけが書く。
 
-成果物の正本と編集責任は[調査成果物の扱い](../probe-workspace/SKILL.md)に従う。
+成果物の正本と編集責任は[調査成果物の扱い](../ip-workspace/SKILL.md)に従う。
 
 ## 更新するファイル
 
@@ -89,7 +89,7 @@ issue 番号ごとに次を伝える。
 - verifier が担当外に見つけたことの一覧
 - 更新後の工数合計とリスク分布
 
-シートへ貼る形が要る場合は `export-items <番号>` を示す。paste.tsv は再検証後の findings.md から作り直す。
+シートへ貼る形が要る場合は `ip-export <番号>` を示す。paste.tsv は再検証後の findings.md から作り直す。
 
 ## 規律
 

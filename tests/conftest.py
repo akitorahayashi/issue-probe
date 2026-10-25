@@ -27,7 +27,7 @@ CHECK_ITEMS_CLI = SCRIPTS / "check_items.py"
 EXPORT_ITEMS_CLI = SCRIPTS / "export_items.py"
 COUNT_HITS_CLI = SCRIPTS / "count_hits.py"
 PREPARE_CLI = SCRIPTS / "prepare.py"
-FINDINGS_TEMPLATE = ROOT / "plugin/skills/probe-issue/assets/findings.md"
+FINDINGS_TEMPLATE = ROOT / "plugin/skills/ip-01-probe/assets/findings.md"
 
 # The scripts are flat modules, not a package, so a pure-function test imports them directly.
 sys.path.insert(0, str(SCRIPTS))

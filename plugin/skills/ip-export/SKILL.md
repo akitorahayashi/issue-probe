@@ -1,5 +1,5 @@
 ---
-name: export-items
+name: ip-export
 description: findings.md の項目から、シートへ貼れる1枚の paste.tsv を導出する。
 argument-hint: <issue番号1, issue番号2...>
 disable-model-invocation: true
@@ -12,7 +12,7 @@ compatibility: python3 3.10以上、git
 
 paste.tsv は findings.md の導出物である。毎回作り直されるので、直すのは findings.md のほうである。
 
-成果物の正本と編集責任は[調査成果物の扱い](../probe-workspace/SKILL.md)に従う。
+成果物の正本と編集責任は[調査成果物の扱い](../ip-workspace/SKILL.md)に従う。
 
 ## 手順
 

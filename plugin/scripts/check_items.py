@@ -211,7 +211,7 @@ def _paste_info(directory: Path) -> list[str]:
     if not paste.is_file():
         return []
     if paste.stat().st_mtime < (directory / "findings.md").stat().st_mtime:
-        return ["paste.tsv が findings.md より古いため、export-items で作り直すまで貼れません"]
+        return ["paste.tsv が findings.md より古いため、ip-export で作り直すまで貼れません"]
     return []
 
 
@@ -244,7 +244,7 @@ def _head_sha(directory: Path) -> str | None:
 
 def run(directory: Path) -> tuple[int, dict[str, Any]]:
     if not directory.is_dir():
-        raise CLIError(f"{directory} がありません。", "probe-issue の準備を先に実行してください。")
+        raise CLIError(f"{directory} がありません。", "ip-01-probe の準備を先に実行してください。")
 
     findings = directory / "findings.md"
     front_matter, items = read_items(findings)
